@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meow Calendar 🐱</title>
+<style>
+  /* ───────────── Reset & Base ───────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --pink:      #ffb3c6;
+    --pink-l:    #ffd6e0;
+    --lavender:  #c9b8f5;
+    --lavender-l:#e8e0ff;
+    --mint:      #b5ead7;
+    --mint-l:    #d9f5ec;
+    --cream:     #fff9f0;
+    --peach:     #ffc9a5;
+    --yellow-l:  #fff5c2;
+    --text:      #5a4570;
+    --text-light:#9b8aab;
+    --shadow:    rgba(180,140,200,0.25);
+  }
+
+  body {
+    font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #fde8f0 0%, #ede8ff 35%, #e8f5ee 70%, #fff9e8 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 4rem;
+    color: var(--text);
+  }
+
+  /* ───────────── Header ───────────── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .header h1 {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #e86fa0, #9b6fd4, #4ab8a0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  .header .subtitle {
+    font-size: 1rem;
+    color: var(--text-light);
+    margin-top: 0.3rem;
+    font-weight: 600;
+  }
+  .deco-row {
+    font-size: 1.4rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.3rem;
+    animation: floatDeco 3s ease-in-out infinite;
+  }
+  @keyframes floatDeco {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* ───────────── Month Label ───────────── */
+  .month-label {
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1.2rem;
+    background: white;
+    padding: 0.5rem 2rem;
+    border-radius: 50px;
+    box-shadow: 0 4px 16px var(--shadow);
+    letter-spacing: 0.05em;
+  }
+
+  /* ───────────── Calendar Grid ───────────── */
+  .calendar-wrap {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px var(--shadow);
+    padding: 1.5rem;
+    width: min(660px, 100%);
+  }
+
+  .day-headers {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .day-header {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.3rem 0;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+
+  .day-cell {
+    aspect-ratio: 1;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: clamp(0.75rem, 2vw, 1rem);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+    user-select: none;
+    background: var(--lavender-l);
+    color: var(--text);
+    border: 2px solid transparent;
+  }
+  .day-cell:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px var(--shadow);
+    border-color: var(--lavender);
+    z-index: 1;
+  }
+  .day-cell:active { transform: scale(0.97); }
+
+  .day-cell.past {
+    background: #f5f3f7;
+    color: #c5b8d0;
+    opacity: 0.75;
+  }
+  .day-cell.past:hover {
+    border-color: #ddd5e5;
+  }
+
+  .day-cell.today {
+    background: linear-gradient(135deg, #ffb3c6, #c9b8f5);
+    color: white;
+    border-color: transparent;
+    animation: todayGlow 2.5s ease-in-out infinite;
+    box-shadow: 0 0 0 0 rgba(201,184,245,0.7);
+  }
+  @keyframes todayGlow {
+    0%,100% { box-shadow: 0 0 8px 2px rgba(255,179,198,0.5), 0 0 20px 4px rgba(201,184,245,0.3); }
+    50%      { box-shadow: 0 0 16px 6px rgba(255,179,198,0.7), 0 0 32px 10px rgba(201,184,245,0.5); }
+  }
+
+  .day-cell.weekend { background: #fff0f8; }
+  .day-cell.weekend.past { background: #f7f0f5; }
+
+  .day-cell .paw-hint {
+    font-size: 0.55rem;
+    margin-top: 2px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .day-cell:hover .paw-hint { opacity: 1; }
+
+  .empty-cell { background: transparent !important; cursor: default; }
+  .empty-cell:hover { transform: none !important; box-shadow: none !important; border-color: transparent !important; }
+
+  /* ───────────── Decorative paw prints ───────────── */
+  .paw-decor {
+    position: fixed;
+    pointer-events: none;
+    font-size: 1.5rem;
+    opacity: 0.07;
+    animation: drift 12s ease-in-out infinite;
+    z-index: 0;
+  }
+  @keyframes drift {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    33%  { transform: translateY(-15px) rotate(8deg); }
+    66%  { transform: translateY(8px) rotate(-5deg); }
+  }
+
+  /* ───────────── Modal Backdrop ───────────── */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(90,60,120,0.35);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  /* ───────────── Modal Box ───────────── */
+  .modal {
+    background: white;
+    border-radius: 28px;
+    padding: 2rem 2rem 1.5rem;
+    width: min(400px, 100%);
+    box-shadow: 0 20px 60px rgba(90,60,120,0.3);
+    position: relative;
+    animation: modalPop 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    text-align: center;
+  }
+  @keyframes modalPop {
+    from { transform: scale(0.6) translateY(40px); opacity: 0; }
+    to   { transform: scale(1) translateY(0);     opacity: 1; }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 0.8rem; right: 0.8rem;
+    background: var(--lavender-l);
+    border: none;
+    border-radius: 50%;
+    width: 2rem; height: 2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, transform 0.15s;
+    font-weight: 700;
+  }
+  .modal-close:hover { background: var(--lavender); transform: scale(1.1); }
+
+  .modal-date-label {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* ───────────── Cat Stage ───────────── */
+  .cat-stage {
+    width: 180px;
+    height: 200px;
+    margin: 0 auto 1rem;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  /* ───────────── Quote ───────────── */
+  .modal-quote {
+    background: linear-gradient(135deg, var(--pink-l), var(--lavender-l));
+    border-radius: 16px;
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.45;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .modal-quote::before {
+    content: '"';
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--lavender);
+    position: absolute;
+    top: -0.3rem; left: 0.5rem;
+    font-family: Georgia, serif;
+    opacity: 0.6;
+  }
+  .modal-quote .quote-text {
+    display: block;
+    padding-left: 1.2rem;
+  }
+
+  .modal-footer {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    margin-top: 0.2rem;
+  }
+
+  /* ─────────────────────────────────────────
+     CAT 1 — RAGDOLL (blue-grey & white)
+  ───────────────────────────────────────── */
+  .cat-ragdoll {
+    position: relative;
+    width: 140px;
+    height: 170px;
+    animation: catBounce 1.8s ease-in-out infinite;
+  }
+  @keyframes catBounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  /* Body */
+  .cat-ragdoll .body {
+    position: absolute;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    width: 78px; height: 72px;
+    background: linear-gradient(180deg, #b0b8d0 0%, #d8dce8 60%, #f0f2f8 100%);
+    border-radius: 40px 40px 38px 38px;
+  }
+  /* white chest patch */
+  .cat-ragdoll .chest {
+    position: absolute;
+    bottom: 22px; left: 50%;
+    transform: translateX(-50%);
+    width: 38px; height: 44px;
+    background: #f8f8ff;
+    border-radius: 50% 50% 40% 40%;
+  }
+  /* Head */
+  .cat-ragdoll .head {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 72px;
+    background: linear-gradient(150deg, #c5cce0 0%, #dde2ef 60%, #eef0f8 100%);
+    border-radius: 46px 46px 38px 38px;
+  }
+  /* white face mask */
+  .cat-ragdoll .face-mask {
+    position: absolute;
+    bottom: 10px; left: 50%;
+    transform: translateX(-50%);
+    width: 52px; height: 46px;
+    background: #f8f8ff;
+    border-radius: 50% 50% 42% 42%;
+  }
+  /* Ears */
+  .cat-ragdoll .ear-l,
+  .cat-ragdoll .ear-r {
+    position: absolute;
+    top: 4px;
+    width: 0; height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 26px solid #a0a8c0;
+    animation: earFlick 4s ease-in-out infinite;
+  }
+  .cat-ragdoll .ear-l { left: 6px; transform: rotate(-12deg); }
+  .cat-ragdoll .ear-r { right: 6px; transform: rotate(12deg); animation-delay: 0.4s; }
+  @keyframes earFlick {
+    0%,85%,100% { transform: rotate(-12deg) scaleY(1); }
+    90%,95% { transform: rotate(-12deg) scaleY(0.7); }
+  }
+  .cat-ragdoll .ear-r {
+    animation-name: earFlickR;
+  }
+  @keyframes earFlickR {
+    0%,85%,100% { transform: rotate(12deg) scaleY(1); }
+    90%,95% { transform: rotate(12deg) scaleY(0.7); }
+  }
+  /* inner ears */
+  .cat-ragdoll .ear-inner-l,
+  .cat-ragdoll .ear-inner-r {
+    position: absolute;
+    top: 10px;
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 16px solid #d4aabb;
+  }
+  .cat-ragdoll .ear-inner-l { left: 13px; transform: rotate(-12deg); }
+  .cat-ragdoll .ear-inner-r { right: 13px; transform: rotate(12deg); }
+
+  /* Eyes */
+  .cat-ragdoll .eye-l,
+  .cat-ragdoll .eye-r {
+    position: absolute;
+    top: 26px;
+    width: 16px; height: 16px;
+    background: #7ab0e8;
+    border-radius: 50%;
+    border: 2px solid #4a80b8;
+    overflow: hidden;
+    animation: blinkRagdoll 5s ease-in-out infinite;
+  }
+  .cat-ragdoll .eye-l { left: 14px; }
+  .cat-ragdoll .eye-r { right: 14px; animation-delay: 0.1s; }
+  @keyframes blinkRagdoll {
+    0%,92%,100% { transform: scaleY(1); }
+    95%,97% { transform: scaleY(0.08); }
+  }
+  .cat-ragdoll .pupil-l,
+  .cat-ragdoll .pupil-r {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 8px; height: 10px;
+    background: #1a1a2e;
+    border-radius: 50%;
+  }
+  .cat-ragdoll .eye-shine-l,
+  .cat-ragdoll .eye-shine-r {
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 4px; height: 4px;
+    background: white;
+    border-radius: 50%;
+  }
+
+  /* Nose */
+  .cat-ragdoll .nose {
+    position: absolute;
+    top: 44px; left: 50%;
+    transform: translateX(-50%);
+    width: 10px; height: 7px;
+    background: #e8a0b8;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  }
+  /* Mouth */
+  .cat-ragdoll .mouth {
+    position: absolute;
+    top: 50px; left: 50%;
+    transform: translateX(-50%);
+    width: 20px; height: 8px;
+    border-bottom: 2px solid #c080a0;
+    border-radius: 0 0 10px 10px;
+  }
+  /* Whiskers */
+  .cat-ragdoll .whisker { position: absolute; background: #8890a8; border-radius: 1px; }
+  .cat-ragdoll .wl1 { top: 47px; left: 2px; width: 22px; height: 1.5px; transform: rotate(-8deg); }
+  .cat-ragdoll .wl2 { top: 51px; left: 0; width: 20px; height: 1.5px; transform: rotate(2deg); }
+  .cat-ragdoll .wr1 { top: 47px; right: 2px; width: 22px; height: 1.5px; transform: rotate(8deg); }
+  .cat-ragdoll .wr2 { top: 51px; right: 0; width: 20px; height: 1.5px; transform: rotate(-2deg); }
+
+  /* Paws */
+  .cat-ragdoll .paw-l,
+  .cat-ragdoll .paw-r {
+    position: absolute;
+    bottom: 0;
+    width: 26px; height: 16px;
+    background: #d8dce8;
+    border-radius: 50%;
+    border: 2px solid #b0b8d0;
+  }
+  .cat-ragdoll .paw-l { left: 50%; transform: translateX(-150%); }
+  .cat-ragdoll .paw-r { left: 50%; transform: translateX(50%); }
+
+  /* Tail */
+  .cat-ragdoll .tail {
+    position: absolute;
+    bottom: 14px; right: -18px;
+    width: 50px; height: 16px;
+    background: linear-gradient(90deg, #b0b8d0, #c8cce0);
+    border-radius: 0 20px 20px 0;
+    transform-origin: left center;
+    animation: tailWag 1.2s ease-in-out infinite;
+  }
+  @keyframes tailWag {
+    0%,100% { transform: rotate(-18deg); }
+    50% { transform: rotate(18deg); }
+  }
+
+  /* ─────────────────────────────────────────
+     CAT 2 — SIBERIAN TABBY (warm orange/red)
+  ───────────────────────────────────────── */
+  .cat-siberian {
+    position: relative;
+    width: 140px;
+    height: 170px;
+    animation: catBounce2 2s ease-in-out infinite;
+  }
+  @keyframes catBounce2 {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-6px) rotate(-1deg); }
+    75% { transform: translateY(-4px) rotate(1deg); }
+  }
+
+  /* Body */
+  .cat-siberian .body {
+    position: absolute;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    width: 78px; height: 72px;
+    background: linear-gradient(180deg, #c85a28 0%, #e07840 40%, #f0a060 100%);
+    border-radius: 40px 40px 38px 38px;
+  }
+  /* tabby stripes on body */
+  .cat-siberian .stripe {
+    position: absolute;
+    background: rgba(100,30,10,0.18);
+    border-radius: 4px;
+  }
+  .cat-siberian .s1 { top: 15px; left: 10px; width: 58px; height: 5px; transform: rotate(-2deg); }
+  .cat-siberian .s2 { top: 28px; left: 14px; width: 50px; height: 4px; transform: rotate(-1deg); }
+  .cat-siberian .s3 { top: 40px; left: 12px; width: 54px; height: 4px; transform: rotate(1deg); }
+
+  /* belly */
+  .cat-siberian .belly {
+    position: absolute;
+    bottom: 22px; left: 50%;
+    transform: translateX(-50%);
+    width: 36px; height: 42px;
+    background: #fad0a0;
+    border-radius: 50% 50% 40% 40%;
+  }
+
+  /* Head */
+  .cat-siberian .head {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 84px; height: 76px;
+    background: linear-gradient(150deg, #c85a28 0%, #d86e38 50%, #e88050 100%);
+    border-radius: 48px 48px 40px 40px;
+  }
+  /* Forehead stripes */
+  .cat-siberian .fstripe {
+    position: absolute;
+    background: rgba(100,30,10,0.2);
+    border-radius: 3px;
+  }
+  .cat-siberian .fs1 { top: 8px; left: 24px; width: 36px; height: 4px; transform: rotate(-1deg); }
+  .cat-siberian .fs2 { top: 16px; left: 20px; width: 44px; height: 3px; transform: rotate(0deg); }
+  .cat-siberian .fs3 { top: 24px; left: 26px; width: 32px; height: 3px; }
+
+  /* muzzle */
+  .cat-siberian .muzzle {
+    position: absolute;
+    bottom: 12px; left: 50%;
+    transform: translateX(-50%);
+    width: 44px; height: 30px;
+    background: #fad0a0;
+    border-radius: 50%;
+  }
+
+  /* Ears */
+  .cat-siberian .ear-l,
+  .cat-siberian .ear-r {
+    position: absolute;
+    top: 2px;
+    width: 0; height: 0;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    border-bottom: 28px solid #b84a20;
+    animation: earFlickS 3.5s ease-in-out infinite;
+  }
+  .cat-siberian .ear-l { left: 4px; transform: rotate(-14deg); }
+  .cat-siberian .ear-r { right: 4px; transform: rotate(14deg); animation-delay: 0.6s; }
+  @keyframes earFlickS {
+    0%,80%,100% { transform: rotate(-14deg) scaleY(1); }
+    86%,92% { transform: rotate(-14deg) scaleY(0.65); }
+  }
+  .cat-siberian .ear-r { animation-name: earFlickSR; }
+  @keyframes earFlickSR {
+    0%,80%,100% { transform: rotate(14deg) scaleY(1); }
+    86%,92% { transform: rotate(14deg) scaleY(0.65); }
+  }
+  .cat-siberian .ear-inner-l,
+  .cat-siberian .ear-inner-r {
+    position: absolute;
+    top: 8px;
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 16px solid #f0a080;
+  }
+  .cat-siberian .ear-inner-l { left: 12px; transform: rotate(-14deg); }
+  .cat-siberian .ear-inner-r { right: 12px; transform: rotate(14deg); }
+
+  /* Eyes */
+  .cat-siberian .eye-l,
+  .cat-siberian .eye-r {
+    position: absolute;
+    top: 28px;
+    width: 17px; height: 17px;
+    background: #60c860;
+    border-radius: 50%;
+    border: 2px solid #308830;
+    overflow: hidden;
+    animation: blinkSiberian 4.5s ease-in-out infinite;
+  }
+  .cat-siberian .eye-l { left: 14px; }
+  .cat-siberian .eye-r { right: 14px; animation-delay: 0.15s; }
+  @keyframes blinkSiberian {
+    0%,90%,100% { transform: scaleY(1); }
+    93%,96% { transform: scaleY(0.07); }
+  }
+  .cat-siberian .pupil-l,
+  .cat-siberian .pupil-r {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 7px; height: 12px;
+    background: #1a1a2e;
+    border-radius: 50%;
+  }
+  .cat-siberian .eye-shine-l,
+  .cat-siberian .eye-shine-r {
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 4px; height: 4px;
+    background: white;
+    border-radius: 50%;
+  }
+
+  /* Nose */
+  .cat-siberian .nose {
+    position: absolute;
+    top: 44px; left: 50%;
+    transform: translateX(-50%);
+    width: 11px; height: 8px;
+    background: #e05060;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  }
+  /* Mouth */
+  .cat-siberian .mouth {
+    position: absolute;
+    top: 51px; left: 50%;
+    transform: translateX(-50%);
+    width: 22px; height: 8px;
+    border-bottom: 2px solid #b84060;
+    border-radius: 0 0 10px 10px;
+  }
+  /* Whiskers */
+  .cat-siberian .whisker { position: absolute; background: #f0d0b0; border-radius: 1px; }
+  .cat-siberian .wl1 { top: 48px; left: 0; width: 24px; height: 1.5px; transform: rotate(-6deg); }
+  .cat-siberian .wl2 { top: 52px; left: -2px; width: 22px; height: 1.5px; transform: rotate(4deg); }
+  .cat-siberian .wr1 { top: 48px; right: 0; width: 24px; height: 1.5px; transform: rotate(6deg); }
+  .cat-siberian .wr2 { top: 52px; right: -2px; width: 22px; height: 1.5px; transform: rotate(-4deg); }
+
+  /* Paws */
+  .cat-siberian .paw-l,
+  .cat-siberian .paw-r {
+    position: absolute;
+    bottom: 0;
+    width: 28px; height: 17px;
+    background: #d87040;
+    border-radius: 50%;
+    border: 2px solid #b85a28;
+  }
+  .cat-siberian .paw-l { left: 50%; transform: translateX(-150%); }
+  .cat-siberian .paw-r { left: 50%; transform: translateX(50%); }
+
+  /* Tail */
+  .cat-siberian .tail {
+    position: absolute;
+    bottom: 14px; left: -16px;
+    width: 48px; height: 16px;
+    background: linear-gradient(90deg, #e07840, #c85a28);
+    border-radius: 20px 0 0 20px;
+    transform-origin: right center;
+    animation: tailWagS 1s ease-in-out infinite;
+  }
+  /* tabby stripe on tail */
+  .cat-siberian .tail::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 8px;
+    width: 32px; height: 4px;
+    background: rgba(100,30,10,0.2);
+    border-radius: 3px;
+  }
+  @keyframes tailWagS {
+    0%,100% { transform: rotate(20deg); }
+    50% { transform: rotate(-20deg); }
+  }
+
+  /* Blush cheeks */
+  .cat-ragdoll .blush-l,
+  .cat-ragdoll .blush-r,
+  .cat-siberian .blush-l,
+  .cat-siberian .blush-r {
+    position: absolute;
+    width: 14px; height: 8px;
+    border-radius: 50%;
+    opacity: 0.55;
+  }
+  .cat-ragdoll .blush-l { top: 40px; left: 5px; background: #f0a0b8; }
+  .cat-ragdoll .blush-r { top: 40px; right: 5px; background: #f0a0b8; }
+  .cat-siberian .blush-l { top: 42px; left: 5px; background: #e07060; }
+  .cat-siberian .blush-r { top: 42px; right: 5px; background: #e07060; }
+
+  /* Sound wave animation */
+  .sound-wave {
+    position: absolute;
+    top: -10px; right: -10px;
+    font-size: 1.2rem;
+    animation: soundPop 0.6s ease-out forwards;
+  }
+  @keyframes soundPop {
+    0% { opacity: 0; transform: scale(0) rotate(-10deg); }
+    60% { opacity: 1; transform: scale(1.2) rotate(5deg); }
+    100% { opacity: 0; transform: scale(1) translateY(-20px); }
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .calendar-wrap { padding: 1rem; }
+    .day-cell { border-radius: 10px; font-size: 0.8rem; }
+    .modal { padding: 1.5rem 1.2rem 1.2rem; }
+    .cat-stage { width: 150px; height: 170px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Decorative paw prints -->
+<div class="paw-decor" style="top:5%;left:3%;animation-delay:0s">🐾</div>
+<div class="paw-decor" style="top:15%;right:5%;animation-delay:2s">⭐</div>
+<div class="paw-decor" style="top:60%;left:2%;animation-delay:4s">💫</div>
+<div class="paw-decor" style="top:75%;right:3%;animation-delay:1s">🐾</div>
+<div class="paw-decor" style="bottom:10%;left:6%;animation-delay:3s">💕</div>
+
+<div class="header">
+  <h1>Meow Calendar</h1>
+  <p class="subtitle">Click any day for a surprise!</p>
+  <div class="deco-row">🐱 ✨ 🐾 ✨ 🐱</div>
+</div>
+
+<div class="month-label" id="monthLabel"></div>
+
+<div class="calendar-wrap">
+  <div class="day-headers">
+    <div class="day-header">Sun</div>
+    <div class="day-header">Mon</div>
+    <div class="day-header">Tue</div>
+    <div class="day-header">Wed</div>
+    <div class="day-header">Thu</div>
+    <div class="day-header">Fri</div>
+    <div class="day-header">Sat</div>
+  </div>
+  <div class="calendar-grid" id="calendarGrid"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose" aria-label="Close">✕</button>
+    <div class="modal-date-label" id="modalDateLabel"></div>
+    <div class="cat-stage" id="catStage"></div>
+    <div class="modal-quote" id="modalQuote">
+      <span class="quote-text" id="quoteText"></span>
+    </div>
+    <div class="modal-footer">🐾 Click outside or press Esc to close</div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+//  QUOTES (30 quotes, no consecutive repeat)
+// ─────────────────────────────────────────
+const QUOTES = [
+  "Every day is a fresh start, even for cats.",
+  "You are purrfectly capable of amazing things.",
+  "Land on your feet — you always do.",
+  "Curiosity leads to the best adventures.",
+  "Stretch, breathe, and take on the day.",
+  "You have nine lives worth of potential.",
+  "Be as fearless as a cat on a rooftop.",
+  "Today holds something wonderful for you.",
+  "Nap when you need to. Then conquer.",
+  "Trust your instincts — they purr with wisdom.",
+  "Even the smallest paw leaves a big mark.",
+  "You are loved more than you know.",
+  "Chase what makes your heart leap.",
+  "Rest is part of the journey, not a detour.",
+  "Great things happen one soft step at a time.",
+  "You are exactly where you need to be.",
+  "Land gracefully — you always find your footing.",
+  "The sun is out and so is your potential.",
+  "Be bold. Be curious. Be magnificently you.",
+  "Every purr starts with a single breath.",
+  "You deserve all the warmth today brings.",
+  "Small joys add up to a beautiful life.",
+  "Leap — the landing always works itself out.",
+  "Your presence makes the world cozier.",
+  "Today is a good day to be wonderfully alive.",
+  "Shine like sunlight on a warm windowsill.",
+  "You are braver than any cat on the internet.",
+  "Make today as cozy as a cat nap in the sun.",
+  "The best is always just around the corner.",
+  "You are one-of-a-kind and absolutely enough."
+];
+
+let lastQuoteIdx = -1;
+function pickQuote() {
+  let idx;
+  do { idx = Math.floor(Math.random() * QUOTES.length); }
+  while (idx === lastQuoteIdx);
+  lastQuoteIdx = idx;
+  return QUOTES[idx];
+}
+
+// ─────────────────────────────────────────
+//  WEB AUDIO — 5 synthesised meow sounds
+// ─────────────────────────────────────────
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playMeow(type) {
+  const ctx = getAudioCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+
+  const now = ctx.currentTime;
+
+  // Each meow is: oscillator + gain envelope
+  // We modulate frequency over time to create the pitch glide of a meow
+
+  const osc = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+  const filterNode = ctx.createBiquadFilter();
+
+  filterNode.type = 'bandpass';
+  filterNode.frequency.value = 1200;
+  filterNode.Q.value = 2;
+
+  osc.connect(filterNode);
+  filterNode.connect(gainNode);
+  gainNode.connect(ctx.destination);
+
+  osc.type = 'sawtooth';
+
+  const meows = [
+    // 0: short sharp meow — high pitch rise-fall
+    () => {
+      osc.frequency.setValueAtTime(500, now);
+      osc.frequency.linearRampToValueAtTime(900, now + 0.12);
+      osc.frequency.linearRampToValueAtTime(600, now + 0.28);
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.28, now + 0.05);
+      gainNode.gain.linearRampToValueAtTime(0.22, now + 0.2);
+      gainNode.gain.linearRampToValueAtTime(0, now + 0.35);
+      osc.start(now); osc.stop(now + 0.38);
+    },
+    // 1: long melodic meow — rises then lingers
+    () => {
+      osc.frequency.setValueAtTime(380, now);
+      osc.frequency.linearRampToValueAtTime(780, now + 0.2);
+      osc.frequency.linearRampToValueAtTime(650, now + 0.55);
+      osc.frequency.linearRampToValueAtTime(500, now + 0.85);
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.3, now + 0.08);
+      gainNode.gain.setValueAtTime(0.3, now + 0.6);
+      gainNode.gain.linearRampToValueAtTime(0, now + 0.9);
+      osc.start(now); osc.stop(now + 0.95);
+    },
+    // 2: questioning meow — pitch rises at end
+    () => {
+      osc.frequency.setValueAtTime(420, now);
+      osc.frequency.linearRampToValueAtTime(580, now + 0.18);
+      osc.frequency.linearRampToValueAtTime(480, now + 0.35);
+      osc.frequency.linearRampToValueAtTime(820, now + 0.55);
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.26, now + 0.06);
+      gainNode.gain.setValueAtTime(0.26, now + 0.45);
+      gainNode.gain.linearRampToValueAtTime(0, now + 0.65);
+      osc.start(now); osc.stop(now + 0.68);
+    },
+    // 3: chirpy/trill — rapid pitch wobble
+    () => {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(600, now);
+      for (let i = 0; i < 8; i++) {
+        osc.frequency.linearRampToValueAtTime(600 + (i % 2 === 0 ? 200 : -100), now + 0.05 * i);
+      }
+      osc.frequency.linearRampToValueAtTime(500, now + 0.5);
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.2, now + 0.04);
+      gainNode.gain.setValueAtTime(0.2, now + 0.38);
+      gainNode.gain.linearRampToValueAtTime(0, now + 0.55);
+      osc.start(now); osc.stop(now + 0.58);
+    },
+    // 4: deep rumbling meow — lower pitched, slower
+    () => {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(280, now);
+      osc.frequency.linearRampToValueAtTime(460, now + 0.25);
+      osc.frequency.linearRampToValueAtTime(380, now + 0.65);
+      osc.frequency.linearRampToValueAtTime(260, now + 1.0);
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(0.32, now + 0.1);
+      gainNode.gain.setValueAtTime(0.32, now + 0.7);
+      gainNode.gain.linearRampToValueAtTime(0, now + 1.1);
+      osc.start(now); osc.stop(now + 1.15);
+    }
+  ];
+
+  meows[type % 5]();
+}
+
+let lastSoundIdx = -1;
+function playRandomMeow() {
+  let idx;
+  do { idx = Math.floor(Math.random() * 5); }
+  while (idx === lastSoundIdx);
+  lastSoundIdx = idx;
+  playMeow(idx);
+}
+
+// ─────────────────────────────────────────
+//  CAT HTML BUILDERS
+// ─────────────────────────────────────────
+function buildRagdoll() {
+  return `
+  <div class="cat-ragdoll">
+    <div class="tail"></div>
+    <div class="body">
+      <div class="stripe s1"></div>
+      <div class="stripe s2"></div>
+    </div>
+    <div class="chest"></div>
+    <div class="paw-l"></div>
+    <div class="paw-r"></div>
+    <div class="head">
+      <div class="ear-l"></div><div class="ear-inner-l"></div>
+      <div class="ear-r"></div><div class="ear-inner-r"></div>
+      <div class="face-mask"></div>
+      <div class="eye-l">
+        <div class="pupil-l"></div>
+        <div class="eye-shine-l"></div>
+      </div>
+      <div class="eye-r">
+        <div class="pupil-r"></div>
+        <div class="eye-shine-r"></div>
+      </div>
+      <div class="blush-l"></div>
+      <div class="blush-r"></div>
+      <div class="nose"></div>
+      <div class="mouth"></div>
+      <div class="whisker wl1"></div>
+      <div class="whisker wl2"></div>
+      <div class="whisker wr1"></div>
+      <div class="whisker wr2"></div>
+    </div>
+  </div>`;
+}
+
+function buildSiberian() {
+  return `
+  <div class="cat-siberian">
+    <div class="tail"></div>
+    <div class="body">
+      <div class="stripe s1"></div>
+      <div class="stripe s2"></div>
+      <div class="stripe s3"></div>
+    </div>
+    <div class="belly"></div>
+    <div class="paw-l"></div>
+    <div class="paw-r"></div>
+    <div class="head">
+      <div class="ear-l"></div><div class="ear-inner-l"></div>
+      <div class="ear-r"></div><div class="ear-inner-r"></div>
+      <div class="fstripe fs1"></div>
+      <div class="fstripe fs2"></div>
+      <div class="fstripe fs3"></div>
+      <div class="muzzle"></div>
+      <div class="eye-l">
+        <div class="pupil-l"></div>
+        <div class="eye-shine-l"></div>
+      </div>
+      <div class="eye-r">
+        <div class="pupil-r"></div>
+        <div class="eye-shine-r"></div>
+      </div>
+      <div class="blush-l"></div>
+      <div class="blush-r"></div>
+      <div class="nose"></div>
+      <div class="mouth"></div>
+      <div class="whisker wl1"></div>
+      <div class="whisker wl2"></div>
+      <div class="whisker wr1"></div>
+      <div class="whisker wr2"></div>
+    </div>
+  </div>`;
+}
+
+let lastCatType = -1;
+function pickCat() {
+  let t;
+  do { t = Math.floor(Math.random() * 2); }
+  while (t === lastCatType);
+  lastCatType = t;
+  return t === 0 ? buildRagdoll() : buildSiberian();
+}
+
+// ─────────────────────────────────────────
+//  CALENDAR BUILDER
+// ─────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+
+const today = new Date();
+const todayY = today.getFullYear();
+const todayM = today.getMonth();
+const todayD = today.getDate();
+
+function buildCalendar() {
+  document.getElementById('monthLabel').textContent =
+    `${MONTHS[todayM]} ${todayY}`;
+
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  const firstDay = new Date(todayY, todayM, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(todayY, todayM + 1, 0).getDate();
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div');
+    el.className = 'day-cell empty-cell';
+    grid.appendChild(el);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cell = document.createElement('div');
+    const isToday = (d === todayD);
+    const isPast  = (d < todayD);
+    const dow = (firstDay + d - 1) % 7; // 0=Sun,6=Sat
+    const isWeekend = (dow === 0 || dow === 6);
+
+    let cls = 'day-cell';
+    if (isToday)  cls += ' today';
+    else if (isPast) cls += ' past';
+    if (isWeekend && !isToday) cls += ' weekend';
+
+    cell.className = cls;
+    cell.innerHTML = `${d}<span class="paw-hint">🐾</span>`;
+    cell.dataset.day = d;
+
+    cell.addEventListener('click', () => openModal(d));
+    grid.appendChild(cell);
+  }
+}
+
+// ─────────────────────────────────────────
+//  MODAL LOGIC
+// ─────────────────────────────────────────
+const backdrop = document.getElementById('modalBackdrop');
+const modal    = document.getElementById('modal');
+const closeBtn = document.getElementById('modalClose');
+const catStage = document.getElementById('catStage');
+const quoteEl  = document.getElementById('quoteText');
+const dateLabel = document.getElementById('modalDateLabel');
+
+function openModal(day) {
+  const dateStr = `${MONTHS[todayM]} ${day}, ${todayY}`;
+  dateLabel.textContent = dateStr;
+
+  // Set cat
+  catStage.innerHTML = pickCat();
+
+  // Sound wave emoji pop
+  const wave = document.createElement('div');
+  wave.className = 'sound-wave';
+  wave.textContent = '🎵';
+  catStage.appendChild(wave);
+  setTimeout(() => wave.remove(), 700);
+
+  // Set quote
+  quoteEl.textContent = pickQuote();
+
+  // Show modal
+  backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Play sound
+  playRandomMeow();
+
+  // Focus close button for a11y
+  requestAnimationFrame(() => closeBtn.focus());
+}
+
+function closeModal() {
+  backdrop.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+closeBtn.addEventListener('click', closeModal);
+
+backdrop.addEventListener('click', (e) => {
+  if (e.target === backdrop) closeModal();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal();
+});
+
+// Trap focus inside modal
+modal.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+  const focusable = modal.querySelectorAll('button, [tabindex]:not([tabindex="-1"])');
+  const first = focusable[0], last = focusable[focusable.length - 1];
+  if (e.shiftKey) {
+    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+  } else {
+    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+
+// ─────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────
+buildCalendar();
+</script>
+</body>
+</html>
