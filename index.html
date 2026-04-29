@@ -87,7 +87,7 @@
     border-radius: 24px;
     box-shadow: 0 8px 32px var(--shadow);
     padding: 1.5rem;
-    width: min(660px, 100%);
+    width: min(980px, 100%);
   }
 
   .day-headers {
@@ -113,7 +113,7 @@
   }
 
   .day-cell {
-    aspect-ratio: 1;
+    min-height: 160px;
     border-radius: 14px;
     display: flex;
     flex-direction: column;
@@ -189,72 +189,150 @@
 
   /* ───────────── Modal Backdrop ───────────── */
   /* ───────────── Window Overlay ───────────── */
-  .window-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(50, 30, 80, 0.55);
-    backdrop-filter: blur(5px);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  .window-overlay.open { display: flex; }
+  /* ─── In-cell window (opens inside the clicked day cell) ─── */
 
-  .window-wrap {
+  /* Larger calendar needs overflow handling when a cell is open */
+  .calendar-grid { position: relative; }
+
+  /* Open state for a day cell */
+  .day-cell.window-open {
+    cursor: default;
+    overflow: hidden;
+    padding: 0;
+    transform: none !important;
+    border-color: #c090e0 !important;
+    box-shadow: 0 6px 20px rgba(100,50,160,0.35) !important;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
     position: relative;
-    animation: windowArrive 0.3s cubic-bezier(0.34,1.3,0.64,1) forwards;
+    animation: cellOpen 0.2s ease-out forwards;
   }
-  @keyframes windowArrive {
-    from { transform: scale(0.82) translateY(28px); opacity: 0; }
-    to   { transform: scale(1) translateY(0);       opacity: 1; }
+  @keyframes cellOpen {
+    from { box-shadow: 0 0 0 0 rgba(100,50,160,0); }
+    to   { box-shadow: 0 6px 20px rgba(100,50,160,0.35); }
   }
+  .day-cell.window-open:hover { transform: none !important; }
 
-  .window-frame {
-    width: 300px;
-    background: #e0b8f0;
-    border-radius: 14px 14px 10px 10px;
-    padding: 10px 10px 0 10px;
-    box-shadow:
-      0 28px 70px rgba(60,30,100,0.4),
-      inset 0 2px 0 rgba(255,255,255,0.55),
-      inset 0 -2px 0 rgba(0,0,0,0.08);
-  }
-
-  .window-titlebar {
+  /* Title bar inside open cell */
+  .cell-titlebar {
+    height: 20px;
+    background: linear-gradient(to right, #d4a0e8, #e0b8f0);
     display: flex; align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px; padding: 0 2px;
+    padding: 0 6px;
+    flex-shrink: 0;
   }
-  .window-dots { display: flex; gap: 5px; }
-  .window-dot {
-    width: 11px; height: 11px; border-radius: 50%;
+  .cell-dots { display: flex; gap: 3px; }
+  .cell-dots span {
+    width: 8px; height: 8px; border-radius: 50%;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
   }
-  .window-dot:nth-child(1) { background: #ff8fa3; }
-  .window-dot:nth-child(2) { background: #ffd166; }
-  .window-dot:nth-child(3) { background: #a8e6cf; }
-  .window-title-text {
-    font-size: 0.68rem; font-weight: 700;
-    color: #7a40a0; letter-spacing: 0.06em;
+  .cell-dots span:nth-child(1) { background: #ff8fa3; }
+  .cell-dots span:nth-child(2) { background: #ffd166; }
+  .cell-dots span:nth-child(3) { background: #a8e6cf; }
+  .cell-close {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #ff8fa3; border: none;
+    color: white; font-size: 0.6rem; font-weight: 800;
+    cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .cell-close:hover { background: #ff5c7a; }
+
+  /* Glass area: room + shutters stacked */
+  .cell-glass {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
   }
 
-  .window-glass {
-    position: relative; width: 100%; height: 260px;
-    border-radius: 6px 6px 0 0; overflow: hidden;
-  }
-
-  .window-room {
-    width: 100%; height: 100%;
+  /* Cozy room interior */
+  .cell-room {
+    position: absolute; inset: 0;
     background: #fff6f0;
-    background-image: radial-gradient(#f8d8ec 1.5px, transparent 1.5px);
-    background-size: 20px 20px;
-    display: flex; align-items: flex-end;
-    justify-content: center; padding-bottom: 8px;
+    background-image: radial-gradient(#f8d8ec 1px, transparent 1px);
+    background-size: 14px 14px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+    padding: 4px 4px 4px;
+    gap: 3px;
   }
 
-  /* ───────────── Cat Stage ───────────── */
+  /* Cat stage scaled to fit cell */
+  .cell-room .cat-stage {
+    zoom: 0.46;
+    width: 160px; height: 190px;
+    flex-shrink: 0;
+    margin: 0 auto;
+  }
+
+  /* Quote inside cell */
+  .cell-quote {
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: #5a3070;
+    text-align: center;
+    line-height: 1.35;
+    background: rgba(255,220,240,0.9);
+    border-radius: 5px;
+    padding: 3px 5px;
+    width: 100%;
+    box-sizing: border-box;
+    opacity: 0;
+    animation: cellQuoteFade 0.4s ease 0.9s forwards;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+  @keyframes cellQuoteFade {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Shutters overlaid on room */
+  .cell-shutter {
+    position: absolute; top: 0; height: 100%; width: 50%;
+    background: linear-gradient(160deg, #f9c8e8 0%, #e8a0d4 100%);
+    will-change: transform; backface-visibility: hidden; overflow: hidden;
+  }
+  .cell-shutter-left  { left: 0;  transform-origin: left center;  border-right: 1.5px solid #d480c0; }
+  .cell-shutter-right { right: 0; transform-origin: right center; border-left:  1.5px solid #d480c0; }
+
+  .shutter-slats {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: space-evenly; padding: 4px 0;
+  }
+  .shutter-slat {
+    height: 2px; margin: 0 6px;
+    background: rgba(255,255,255,0.45); border-radius: 1px;
+  }
+  .shutter-cross-h {
+    position: absolute; top: 50%; left: 0; right: 0;
+    height: 3px; background: #d480c0; transform: translateY(-50%);
+  }
+  .shutter-paw {
+    position: absolute; bottom: 10px; left: 50%;
+    transform: translateX(-50%); font-size: 1rem; opacity: 0.3;
+  }
+
+  .cell-shutter-left.open  { animation: openLeft  0.6s cubic-bezier(0.4,0,0.2,1) 0.1s both; }
+  .cell-shutter-right.open { animation: openRight 0.6s cubic-bezier(0.4,0,0.2,1) 0.1s both; }
+  @keyframes openLeft  {
+    from { transform: perspective(600px) rotateY(0deg);    }
+    to   { transform: perspective(600px) rotateY(-115deg); }
+  }
+  @keyframes openRight {
+    from { transform: perspective(600px) rotateY(0deg);   }
+    to   { transform: perspective(600px) rotateY(115deg); }
+  }
+
+  /* ───────────── Cat Stage (shared) ───────────── */
   .cat-stage {
     width: 160px; height: 190px;
     position: relative;
@@ -262,89 +340,6 @@
     flex-shrink: 0;
   }
 
-  .shutter {
-    position: absolute; top: 0; height: 100%; width: 50%;
-    background: linear-gradient(160deg, #f9c8e8 0%, #e8a0d4 100%);
-    will-change: transform; backface-visibility: hidden; overflow: hidden;
-  }
-  .shutter-left  { left: 0;  transform-origin: left center;  border-right: 2px solid #d480c0; }
-  .shutter-right { right: 0; transform-origin: right center; border-left:  2px solid #d480c0; }
-
-  .shutter-slats {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    justify-content: space-evenly; padding: 6px 0;
-  }
-  .shutter-slat {
-    height: 3px; margin: 0 10px;
-    background: rgba(255,255,255,0.45); border-radius: 2px;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.06);
-  }
-  .shutter-paw {
-    position: absolute; bottom: 18px; left: 50%;
-    transform: translateX(-50%);
-    font-size: 1.6rem; opacity: 0.35;
-  }
-  .shutter-cross-h {
-    position: absolute; top: 50%; left: 0; right: 0;
-    height: 4px; background: #d480c0; transform: translateY(-50%);
-  }
-
-  .shutter-left.open  { animation: openLeft  0.65s cubic-bezier(0.4,0,0.2,1) 0.15s both; }
-  .shutter-right.open { animation: openRight 0.65s cubic-bezier(0.4,0,0.2,1) 0.15s both; }
-  @keyframes openLeft  {
-    from { transform: perspective(800px) rotateY(0deg);    }
-    to   { transform: perspective(800px) rotateY(-125deg); }
-  }
-  @keyframes openRight {
-    from { transform: perspective(800px) rotateY(0deg);   }
-    to   { transform: perspective(800px) rotateY(125deg); }
-  }
-
-  .window-sill {
-    height: 13px;
-    background: linear-gradient(to bottom, #cc90e0, #b870cc);
-    margin: 0 -10px;
-    box-shadow: 0 5px 12px rgba(90,40,130,0.25);
-    display: flex; align-items: center; justify-content: center;
-    gap: 6px; font-size: 0.6rem;
-  }
-
-  .window-quote-area {
-    background: linear-gradient(135deg, var(--pink-l), var(--lavender-l));
-    border-radius: 0 0 10px 10px;
-    padding: 0.85rem 1rem 0.75rem;
-    text-align: center;
-    opacity: 0;
-    animation: quoteFadeIn 0.45s ease 0.95s forwards;
-  }
-  @keyframes quoteFadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .window-date-label {
-    font-size: 0.7rem; font-weight: 700;
-    color: var(--text-light); letter-spacing: 0.06em; margin-bottom: 0.35rem;
-  }
-  .quote-text {
-    font-size: 0.9rem; font-weight: 700;
-    color: var(--text); line-height: 1.45;
-  }
-  .window-footer { font-size: 0.62rem; color: var(--text-light); margin-top: 0.4rem; }
-
-  .window-close {
-    position: absolute; top: -11px; right: -11px;
-    width: 26px; height: 26px; border-radius: 50%;
-    background: #ff8fa3; border: 2.5px solid white;
-    color: white; font-size: 0.7rem; font-weight: 800;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.22);
-    transition: background 0.2s, transform 0.15s;
-  }
-  .window-close:hover { background: #ff5c7a; transform: scale(1.15); }
-
-     CAT 1 — RAGDOLL (blue-grey & white)
-  ───────────────────────────────────────── */
   .cat-ragdoll {
     position: relative;
     width: 140px;
@@ -754,7 +749,7 @@
   /* Responsive */
   @media (max-width: 480px) {
     .calendar-wrap { padding: 1rem; }
-    .day-cell { border-radius: 10px; font-size: 0.8rem; }
+    .day-cell { border-radius: 10px; font-size: 0.72rem; min-height: 90px; }
     .modal { padding: 1.5rem 1.2rem 1.2rem; }
     .cat-stage { width: 150px; height: 170px; }
   }
@@ -791,22 +786,7 @@
 </div>
 
 <!-- Modal -->
-<div class="window-overlay" id="windowOverlay" role="dialog" aria-modal="true">
-  <div class="window-wrap" id="windowWrap">
-    <button class="window-close" id="windowClose" aria-label="Close">✕</button>
-    <div class="window-frame">
-      <div class="window-titlebar">
-        <div class="window-dots">
-          <div class="window-dot"></div>
-          <div class="window-dot"></div>
-          <div class="window-dot"></div>
-        </div>
-        <div class="window-title-text" id="windowTitleLabel"></div>
-        <div style="width:44px"></div>
-      </div>
-      <div class="window-glass">
-        <div class="window-room">
-          <div class="cat-stage" id="catStage"></div>
+
         </div>
         <div class="shutter shutter-left" id="shutterLeft">
           <div class="shutter-cross-h"></div>
@@ -1046,81 +1026,99 @@ function buildCalendar() {
 }
 
 // ─────────────────────────────────────────
-//  MODAL LOGIC
 // ─────────────────────────────────────────
-const backdrop   = document.getElementById('windowOverlay');
-const windowWrap = document.getElementById('windowWrap');
-const closeBtn   = document.getElementById('windowClose');
-const catStage   = document.getElementById('catStage');
-const quoteEl    = document.getElementById('quoteText');
-const dateLabel  = document.getElementById('windowDateLabel');
-const titleLabel = document.getElementById('windowTitleLabel');
-const shutterL   = document.getElementById('shutterLeft');
-const shutterR   = document.getElementById('shutterRight');
-const quoteArea  = document.getElementById('windowQuoteArea');
+//  IN-CELL WINDOW LOGIC
+// ─────────────────────────────────────────
+let openCell = null;
+let openCellOrigHTML = '';
+let openCellDay = null;
 
 function openModal(day) {
-  const dateStr = `${MONTHS[todayM]} ${day}, ${todayY}`;
-  dateLabel.textContent = dateStr;
-  titleLabel.textContent = dateStr;
+  // Close any currently open cell first
+  if (openCell) closeModal();
 
-  // Set cat
-  catStage.innerHTML = pickCat();
+  const cell = document.querySelector(`.day-cell[data-day="${day}"]`);
+  if (!cell) return;
 
-  // Reset and trigger shutter open animation
-  shutterL.classList.remove('open');
-  shutterR.classList.remove('open');
-  void shutterL.offsetWidth;
-  shutterL.classList.add('open');
-  shutterR.classList.add('open');
+  openCell = cell;
+  openCellOrigHTML = cell.innerHTML;
+  openCellDay = day;
 
-  // Reset quote fade animation
-  quoteArea.style.animation = 'none';
-  void quoteArea.offsetWidth;
-  quoteArea.style.animation = '';
+  const catHTML = pickCat();
+  const quote   = pickQuote();
 
-  // Set quote
-  quoteEl.textContent = pickQuote();
+  cell.classList.add('window-open');
+  cell.innerHTML = `
+    <div class="cell-titlebar">
+      <div class="cell-dots"><span></span><span></span><span></span></div>
+      <button class="cell-close" aria-label="Close">×</button>
+    </div>
+    <div class="cell-glass">
+      <div class="cell-room">
+        <div class="cat-stage">${catHTML}</div>
+        <div class="cell-quote">${quote}</div>
+      </div>
+      <div class="cell-shutter cell-shutter-left">
+        <div class="shutter-cross-h"></div>
+        <div class="shutter-slats">
+          <div class="shutter-slat"></div><div class="shutter-slat"></div>
+          <div class="shutter-slat"></div><div class="shutter-slat"></div>
+          <div class="shutter-slat"></div><div class="shutter-slat"></div>
+          <div class="shutter-slat"></div>
+        </div>
+        <div class="shutter-paw">🐾</div>
+      </div>
+      <div class="cell-shutter cell-shutter-right">
+        <div class="shutter-cross-h"></div>
+        <div class="shutter-slats">
+          <div class="shutter-slat"></div><div class="shutter-slat"></div>
+          <div class="shutter-slat"></div><div class="shutter-slat"></div>
+          <div class="shutter-slat"></div><div class="shutter-slat"></div>
+          <div class="shutter-slat"></div>
+        </div>
+        <div class="shutter-paw">🐾</div>
+      </div>
+    </div>
+  `;
 
-  // Show window
-  backdrop.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  // Trigger shutter animation
+  const sl = cell.querySelector('.cell-shutter-left');
+  const sr = cell.querySelector('.cell-shutter-right');
+  void sl.offsetWidth;
+  sl.classList.add('open');
+  sr.classList.add('open');
 
-  // Play meow as shutters swing open
+  // Wire close button
+  cell.querySelector('.cell-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeModal();
+  });
+
   playRandomMeow();
-
-  requestAnimationFrame(() => closeBtn.focus());
 }
 
 function closeModal() {
-  backdrop.classList.remove('open');
-  document.body.style.overflow = '';
+  if (!openCell) return;
+  const cell = openCell;
+  const day  = openCellDay;
+  openCell = null;
+  openCellDay = null;
+
+  cell.classList.remove('window-open');
+  cell.innerHTML = openCellOrigHTML;
+  cell.addEventListener('click', () => openModal(day));
 }
 
-closeBtn.addEventListener('click', closeModal);
-
-backdrop.addEventListener('click', (e) => {
-  if (e.target === backdrop) closeModal();
+// Close on outside click
+document.addEventListener('click', (e) => {
+  if (openCell && !openCell.contains(e.target)) closeModal();
 });
 
+// Close on Escape
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal();
+  if (e.key === 'Escape' && openCell) closeModal();
 });
 
-windowWrap.addEventListener('keydown', (e) => {
-  if (e.key !== 'Tab') return;
-  const focusable = windowWrap.querySelectorAll('button, [tabindex]:not([tabindex="-1"])');
-  const first = focusable[0], last = focusable[focusable.length - 1];
-  if (e.shiftKey) {
-    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
-  } else {
-    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
-  }
-});
-
-// ─────────────────────────────────────────
-//  INIT
-// ─────────────────────────────────────────
 buildCalendar();
 </script>
 </body>
